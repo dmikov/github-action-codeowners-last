@@ -1,0 +1,23 @@
+{
+  "name": "codewners-last-authors",
+  "description": "Put last authors to CODEOWNERS github action",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "repository": "https://github.com/swimlane/github-action-codeowners-last",
+  "author": "Dmitriy Krasnikov <dmikov@gmail.com>",
+  "scripts": {
+    "package": "ncc build index.js -o dist"
+  },
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/github": "^4.0.0"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.24.1",
+    "prettier": "^1.19.1"
+  },
+  "prettier": {
+    "singleQuote": true
+  }
+}

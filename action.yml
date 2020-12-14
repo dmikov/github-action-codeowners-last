@@ -1,0 +1,20 @@
+name: Codewners last authors
+description: 'Last authors written to CODEOWNERS'
+author: 'Dmitriy Krasnikov'
+branding:
+  icon: '??'
+  color: 'red'
+inputs:
+  directory_to_track:
+    description: 'The directory to monitor'
+    required: true
+  number_of_code_owners:
+    description: 'The number of historical codeowners to keep per source file'
+    required: false
+    default: 2
+outputs:
+  file:
+    description: 'The CODEOWNERS file'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
