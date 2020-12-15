@@ -54,11 +54,12 @@ try {
   promise = client.repos.compareCommits({ base, head, owner: context.repo.owner, repo: context.repo.repo });
   promise.then(response => {
     core.debug(`Response: ${JSON.stringify(response, undefined, 2)}`);
+
     if (response.status !== 200) {
       core.setFailed(`The Octokit client returned ${response.status}.`);
     }
 
-    for (const file in response.data.files) {
+    for (const file of response.data.files) {
       core.debug(`File: ${JSON.stringify(file, undefined, 2)}`);
 
       const filename = file.filename;
