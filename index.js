@@ -27,11 +27,11 @@ try {
     case 'pull_request':
       base = context.payload.pull_request?.base?.sha;
       head = context.payload.pull_request?.head?.sha;
-      break
+      break;
     case 'push':
       base = context.payload.before;
       head = context.payload.after;
-      break
+      break;
     default:
       core.setFailed(`This action supports pull requests and pushes, not ${context.eventName}.`);
   }
