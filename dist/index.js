@@ -14,7 +14,8 @@ const req = { required: true };
 const DIRECTORY_TO_TRACK = core.getInput('directory_to_track', req);
 const NUMBER_OF_CODE_OWNERS = core.getInput('number_of_code_owners', req);
 const FILE_PATH = path.join(DIRECTORY_TO_TRACK, 'CODEOWNERS');
-
+const renamed = []
+const removed = []
 
 // const fileStream = fs.createReadStream(FILE_PATH);
 
@@ -51,18 +52,31 @@ try {
   core.debug(`Head: ${head}`);
 
   promise = client.repos.compareCommits({ base, head, owner: context.repo.owner, repo: context.repo.repo });
-  promise
-    .then(response => {
-      if (response.status !== 200) {
-        core.setFailed(`The Octokit client returned ${response.status}.`);
-      }
+  promise.then(response => {
 
-      const files = response.data.files;
-      for (const file in files) {
-        console.log(file);
+    if (response.status !== 200) {
+      core.setFailed(`The Octokit client returned ${response.status}.`);
+    }
+
+    for (const file in response.data.files) {
+      core.debug(JSON.stringify(file, undefined, 2));
+
+      const filename = file.filename;
+
+      switch (file.status) {
+        case 'added':
+        case 'modified':
+        case 'renamed':
+          renamed.push(filename)
+          break
+        case 'removed':
+          removed.push(filename)
+          break
+        default:
+          core.setFailed(`One of the files has unsupported file status '${file.status}'.`);
       }
-    })
-    .catch(err => core.setFailed(err.message));
+    }
+  }).catch(err => core.setFailed(err.message));
 
 } catch (error) {
   core.setFailed(error.message);
