@@ -10,7 +10,7 @@ const github = __webpack_require__(438);
 const fs = __webpack_require__(747);
 const path = __webpack_require__(622);
 
-const req = {required: true}
+const req = { required: true };
 const DIRECTORY_TO_TRACK = core.getInput('directory_to_track', req);
 const NUMBER_OF_CODE_OWNERS = core.getInput('number_of_code_owners', req);
 const FILE_PATH = path.join(DIRECTORY_TO_TRACK, 'CODEOWNERS');
@@ -19,10 +19,10 @@ const FILE_PATH = path.join(DIRECTORY_TO_TRACK, 'CODEOWNERS');
 // const fileStream = fs.createReadStream(FILE_PATH);
 
 try {
-  const client = github.getOctokit(core.getInput('token', req))
+  const client = github.getOctokit(core.getInput('token', req));
   const context = github.context;
 
-  const payload = JSON.stringify(github.context.payload, undefined, 2)
+  const payload = JSON.stringify(github.context.payload, undefined, 2);
   core.debug(`The event payload: ${payload}`);
 
   const eventName = context.eventName;
@@ -50,23 +50,20 @@ try {
   core.debug(`Base: ${base}`);
   core.debug(`Head: ${head}`);
 
-  client.repos.compareCommits({base, head, owner: context.repo.owner, repo: context.repo.repo}, function(err, response) {
-    if(err){
-      core.setFailed(err.message);
-    }
-    if(response){
-
+  promise = client.repos.compareCommits({ base, head, owner: context.repo.owner, repo: context.repo.repo });
+  promise
+    .then(response => {
       if (response.status !== 200) {
         core.setFailed(`The Octokit client returned ${response.status}.`);
       }
 
       const files = response.data.files;
-      for(const file in files) {
+      for (const file in files) {
         console.log(file);
       }
+    })
+    .catch(err => core.setFailed(err.message));
 
-    }
-  }).wait();
 } catch (error) {
   core.setFailed(error.message);
 }
