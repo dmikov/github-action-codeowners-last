@@ -59,7 +59,7 @@ try {
       }
 
     }
-  });
+  }).wait();
 } catch (error) {
   core.setFailed(error.message);
 }
