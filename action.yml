@@ -5,6 +5,10 @@ branding:
   icon: '??'
   color: 'red'
 inputs:
+  token:
+    description: 'GitHub token for GitHub API requests.'
+    required: true
+    default: ${{ github.token }}
   directory_to_track:
     description: 'The directory to monitor'
     required: true
