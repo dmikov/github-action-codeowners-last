@@ -32,12 +32,12 @@ try {
 
   switch (eventName) {
     case 'pull_request':
-      base = context.payload.pull_request?.base?.sha;
-      head = context.payload.pull_request?.head?.sha;
+      base = context.payload.pull_request.base.sha;
+      head = context.payload.pull_request.head.sha;
       break;
     case 'push':
-      base = context.payload.before
-      head = context.payload.after
+      base = context.payload.before;
+      head = context.payload.after;
       break;
     default:
       core.setFailed(`This action supports pull requests and pushes, not ${context.eventName}.`);
