@@ -1,87 +1,115 @@
-module.exports =
+require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 932:
-/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+/***/ 109:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-const core = __webpack_require__(186);
-const github = __webpack_require__(438);
-const fs = __webpack_require__(747);
-const path = __webpack_require__(622);
+"use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__webpack_require__(186));
+const github = __importStar(__webpack_require__(438));
 const req = { required: true };
-const DIRECTORY_TO_TRACK = core.getInput('directory_to_track', req);
-const NUMBER_OF_CODE_OWNERS = core.getInput('number_of_code_owners', req);
-const FILE_PATH = path.join(DIRECTORY_TO_TRACK, 'CODEOWNERS');
-const renamed = []
-const removed = []
-
-// const fileStream = fs.createReadStream(FILE_PATH);
-
-try {
-  const client = github.getOctokit(core.getInput('token', req));
-  const context = github.context;
-
-  const payload = JSON.stringify(github.context.payload, undefined, 2);
-  core.debug(`The event payload: ${payload}`);
-
-  const eventName = context.eventName;
-
-  let base;
-  let head;
-
-  switch (eventName) {
-    case 'pull_request':
-      base = context.payload.pull_request.base.sha;
-      head = context.payload.pull_request.head.sha;
-      break;
-    case 'push':
-      base = context.payload.before;
-      head = context.payload.after;
-      break;
-    default:
-      core.setFailed(`This action supports pull requests and pushes, not ${context.eventName}.`);
-  }
-
-  if (!base || !head) {
-    core.setFailed(`The base or head commits are missing in ${context.eventName} event.`);
-  }
-
-  core.debug(`Base: ${base}`);
-  core.debug(`Head: ${head}`);
-
-  promise = client.repos.compareCommits({ base, head, owner: context.repo.owner, repo: context.repo.repo });
-  promise.then(response => {
-    core.debug(`Response: ${JSON.stringify(response, undefined, 2)}`);
-
-    if (response.status !== 200) {
-      core.setFailed(`The Octokit client returned ${response.status}.`);
-    }
-
-    for (const file of response.data.files) {
-      core.debug(`File: ${JSON.stringify(file, undefined, 2)}`);
-
-      const filename = file.filename;
-
-      switch (file.status) {
-        case 'added':
-        case 'modified':
-        case 'renamed':
-          renamed.push(filename)
-          break
-        case 'removed':
-          removed.push(filename)
-          break
-        default:
-          core.setFailed(`One of the files has unsupported file status '${file.status}'.`);
-      }
-    }
-  }).catch(err => core.setFailed(err.message));
-
-} catch (error) {
-  core.setFailed(error.message);
+function change(value) {
+    core.debug(value);
 }
+function remove(value) {
+    core.debug(value);
+}
+function getBaseHead(context) {
+    var _a, _b;
+    let base;
+    let head;
+    switch (context.eventName) {
+        case 'pull_request':
+            base = (_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.base.sha;
+            head = (_b = context.payload.pull_request) === null || _b === void 0 ? void 0 : _b.head.sha;
+            break;
+        case 'push':
+            base = context.payload.before;
+            head = context.payload.after;
+            break;
+        default:
+            throw Error(`This action supports pull requests and pushes, not ${context.eventName}.`);
+    }
+    if (!base || !head) {
+        throw Error(`The base or head commits are missing in ${context.eventName} event.`);
+    }
+    core.debug(`Base: ${base}`);
+    core.debug(`Head: ${head}`);
+    return [base, head];
+}
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const client = github.getOctokit(core.getInput('token', req));
+            const context = github.context;
+            const payload = JSON.stringify(github.context.payload, undefined, 2);
+            core.debug(`The event payload: ${payload}`);
+            const [base, head] = getBaseHead(context);
+            const response = yield client.repos.compareCommits({
+                base,
+                head,
+                owner: context.repo.owner,
+                repo: context.repo.repo
+            });
+            core.debug(`Response: ${JSON.stringify(response, undefined, 2)}`);
+            if (response.status !== 200) {
+                throw Error(`The Octokit client returned ${response.status}.`);
+            }
+            for (const file of response.data.files) {
+                core.debug(`File: ${JSON.stringify(file, undefined, 2)}`);
+                const filename = file.filename;
+                switch (file.status) {
+                    case 'added':
+                    case 'modified':
+                    case 'renamed':
+                        change(filename);
+                        break;
+                    case 'removed':
+                        remove(filename);
+                        break;
+                    default:
+                        throw Error(`One of the files has unsupported file status '${file.status}'.`);
+                }
+            }
+        }
+        catch (error) {
+            core.setFailed(error.message);
+        }
+    });
+}
+run();
+
 
 /***/ }),
 
@@ -1544,7 +1572,7 @@ exports.Octokit = Octokit;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
-var isPlainObject = __webpack_require__(287);
+var isPlainObject = __webpack_require__(558);
 var universalUserAgent = __webpack_require__(429);
 
 function lowercaseKeys(object) {
@@ -1930,6 +1958,52 @@ const endpoint = withDefaults(null, DEFAULTS);
 
 exports.endpoint = endpoint;
 //# sourceMappingURL=index.js.map
+
+
+/***/ }),
+
+/***/ 558:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+/*!
+ * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
+ *
+ * Copyright (c) 2014-2017, Jon Schlinkert.
+ * Released under the MIT License.
+ */
+
+function isObject(o) {
+  return Object.prototype.toString.call(o) === '[object Object]';
+}
+
+function isPlainObject(o) {
+  var ctor,prot;
+
+  if (isObject(o) === false) return false;
+
+  // If has modified constructor
+  ctor = o.constructor;
+  if (ctor === undefined) return true;
+
+  // If has modified prototype
+  prot = ctor.prototype;
+  if (isObject(prot) === false) return false;
+
+  // If constructor does not have an Object-specific method
+  if (prot.hasOwnProperty('isPrototypeOf') === false) {
+    return false;
+  }
+
+  // Most likely a plain Object
+  return true;
+}
+
+exports.isPlainObject = isPlainObject;
 
 
 /***/ }),
@@ -3341,7 +3415,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var deprecation = __webpack_require__(481);
+var deprecation = __webpack_require__(932);
 var once = _interopDefault(__webpack_require__(223));
 
 const logOnce = once(deprecation => console.warn(deprecation));
@@ -3406,7 +3480,7 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var endpoint = __webpack_require__(440);
 var universalUserAgent = __webpack_require__(429);
-var isPlainObject = __webpack_require__(287);
+var isPlainObject = __webpack_require__(62);
 var nodeFetch = _interopDefault(__webpack_require__(467));
 var requestError = __webpack_require__(537);
 
@@ -3546,6 +3620,52 @@ const request = withDefaults(endpoint.endpoint, {
 
 exports.request = request;
 //# sourceMappingURL=index.js.map
+
+
+/***/ }),
+
+/***/ 62:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+/*!
+ * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
+ *
+ * Copyright (c) 2014-2017, Jon Schlinkert.
+ * Released under the MIT License.
+ */
+
+function isObject(o) {
+  return Object.prototype.toString.call(o) === '[object Object]';
+}
+
+function isPlainObject(o) {
+  var ctor,prot;
+
+  if (isObject(o) === false) return false;
+
+  // If has modified constructor
+  ctor = o.constructor;
+  if (ctor === undefined) return true;
+
+  // If has modified prototype
+  prot = ctor.prototype;
+  if (isObject(prot) === false) return false;
+
+  // If constructor does not have an Object-specific method
+  if (prot.hasOwnProperty('isPrototypeOf') === false) {
+    return false;
+  }
+
+  // Most likely a plain Object
+  return true;
+}
+
+exports.isPlainObject = isPlainObject;
 
 
 /***/ }),
@@ -3726,7 +3846,7 @@ function removeHook (state, name, method) {
 
 /***/ }),
 
-/***/ 481:
+/***/ 932:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -3750,52 +3870,6 @@ class Deprecation extends Error {
 }
 
 exports.Deprecation = Deprecation;
-
-
-/***/ }),
-
-/***/ 287:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-
-/*!
- * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
- *
- * Copyright (c) 2014-2017, Jon Schlinkert.
- * Released under the MIT License.
- */
-
-function isObject(o) {
-  return Object.prototype.toString.call(o) === '[object Object]';
-}
-
-function isPlainObject(o) {
-  var ctor,prot;
-
-  if (isObject(o) === false) return false;
-
-  // If has modified constructor
-  ctor = o.constructor;
-  if (ctor === undefined) return true;
-
-  // If has modified prototype
-  prot = ctor.prototype;
-  if (isObject(prot) === false) return false;
-
-  // If constructor does not have an Object-specific method
-  if (prot.hasOwnProperty('isPrototypeOf') === false) {
-    return false;
-  }
-
-  // Most likely a plain Object
-  return true;
-}
-
-exports.isPlainObject = isPlainObject;
 
 
 /***/ }),
@@ -5864,7 +5938,7 @@ module.exports = eval("require")("encoding");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("assert");
+module.exports = require("assert");;
 
 /***/ }),
 
@@ -5872,7 +5946,7 @@ module.exports = require("assert");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("events");
+module.exports = require("events");;
 
 /***/ }),
 
@@ -5880,7 +5954,7 @@ module.exports = require("events");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("fs");
+module.exports = require("fs");;
 
 /***/ }),
 
@@ -5888,7 +5962,7 @@ module.exports = require("fs");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("http");
+module.exports = require("http");;
 
 /***/ }),
 
@@ -5896,7 +5970,7 @@ module.exports = require("http");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("https");
+module.exports = require("https");;
 
 /***/ }),
 
@@ -5904,7 +5978,7 @@ module.exports = require("https");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("net");
+module.exports = require("net");;
 
 /***/ }),
 
@@ -5912,7 +5986,7 @@ module.exports = require("net");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("os");
+module.exports = require("os");;
 
 /***/ }),
 
@@ -5920,7 +5994,7 @@ module.exports = require("os");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("path");
+module.exports = require("path");;
 
 /***/ }),
 
@@ -5928,7 +6002,7 @@ module.exports = require("path");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("stream");
+module.exports = require("stream");;
 
 /***/ }),
 
@@ -5936,7 +6010,7 @@ module.exports = require("stream");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("tls");
+module.exports = require("tls");;
 
 /***/ }),
 
@@ -5944,7 +6018,7 @@ module.exports = require("tls");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("url");
+module.exports = require("url");;
 
 /***/ }),
 
@@ -5952,7 +6026,7 @@ module.exports = require("url");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("util");
+module.exports = require("util");;
 
 /***/ }),
 
@@ -5960,7 +6034,7 @@ module.exports = require("util");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("zlib");
+module.exports = require("zlib");;
 
 /***/ })
 
@@ -6002,6 +6076,7 @@ module.exports = require("zlib");
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(932);
+/******/ 	return __webpack_require__(109);
 /******/ })()
 ;
+//# sourceMappingURL=index.js.map

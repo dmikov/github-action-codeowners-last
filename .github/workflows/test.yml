@@ -1,13 +1,17 @@
-name: Mark Codeowners
-
-on: [push]
+name: 'build-test'
+on: # rebuild any PRs and main branch changes
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'releases/*'
 
 jobs:
   upload:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - uses: dmikov/github-action-codeowners-last@main
+      - uses: dmikov/github-action-last-to-codeowners@main
         with:
-          directory_to_track: /src
+          directory_to_track: /test
           number_of_code_owners: 2

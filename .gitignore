@@ -104,3 +104,6 @@ typings/
 
 # JetBrains
 .idea/
+
+# Typescript
+lib/
