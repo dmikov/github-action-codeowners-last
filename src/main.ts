@@ -1,16 +1,10 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {Context} from '@actions/github/lib/context'
+import {Codeowners} from './codeowners';
+import path from 'path';
 
 const req = {required: true}
-
-function change(value: string): void {
-  core.debug(value)
-}
-
-function remove(value: string): void {
-  core.debug(value)
-}
 
 function getBaseHead(context: Context): [string, string] {
   let base: string
@@ -39,6 +33,10 @@ async function run(): Promise<void> {
   try {
     const client = github.getOctokit(core.getInput('token', req))
     const context = github.context
+    const monitorDirectory: string = core.getInput('directory_to_track', req)
+    const numberOfAuthors: number = Number.parseInt(core.getInput('number_of_code_owners', req))
+    const codeowners = new Codeowners(path.join(monitorDirectory, 'CODEOWNERS'), numberOfAuthors)
+
 
     const payload = JSON.stringify(github.context.payload, undefined, 2)
     core.debug(`The event payload: ${payload}`)
@@ -63,10 +61,10 @@ async function run(): Promise<void> {
         case 'added':
         case 'modified':
         case 'renamed':
-          change(filename)
+          codeowners.add(filename, author)
           break
         case 'removed':
-          remove(filename)
+          codeowners.remove(filename)
           break
         default:
           throw Error(`One of the files has unsupported file status '${file.status}'.`)
