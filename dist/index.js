@@ -30,11 +30,13 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Codeowners = void 0;
 const fs = __importStar(__webpack_require__(747));
 class Codeowners {
-    constructor(filePath, numberOfAuthors) {
-        this.filePath = filePath;
+    constructor(monitorDirectory, numberOfAuthors) {
+        this.monitorDirectory = monitorDirectory;
         this.numberOfAuthors = numberOfAuthors;
         this.entries = new Map();
-        this.load(filePath);
+        this.isDirty = false;
+        this.filePath = `.${monitorDirectory}CODEOWNERS`;
+        this.load(this.filePath);
     }
     load(filePath) {
         const content = fs.readFileSync(filePath, { encoding: 'utf8', flag: 'as+' });
@@ -51,6 +53,8 @@ class Codeowners {
         }
     }
     dump() {
+        if (!this.isDirty)
+            return;
         const writeStream = fs.createWriteStream(this.filePath, { encoding: 'utf8', flags: 'w' });
         for (const line of this.lines()) {
             writeStream.write(`${line}\n`);
@@ -59,6 +63,9 @@ class Codeowners {
     }
     add(file, user) {
         var _a;
+        if (!file.startsWith(this.monitorDirectory) || file.includes('CODEOWNERS'))
+            return;
+        this.isDirty = true;
         const userText = `@${user}`;
         if (!this.entries.has(file)) {
             this.entries.set(file, [userText]);
@@ -115,14 +122,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(186));
 const github = __importStar(__webpack_require__(438));
 const codeowners_1 = __webpack_require__(585);
-const path_1 = __importDefault(__webpack_require__(622));
 const req = { required: true };
 function getBaseHead(context) {
     var _a, _b;
@@ -159,7 +162,7 @@ function run() {
             const context = github.context;
             const monitorDirectory = core.getInput('directory_to_track', req);
             const numberOfAuthors = Number.parseInt(core.getInput('number_of_code_owners', req));
-            const codeowners = new codeowners_1.Codeowners(path_1.default.join(monitorDirectory, 'CODEOWNERS'), numberOfAuthors);
+            const codeowners = new codeowners_1.Codeowners(monitorDirectory, numberOfAuthors);
             const payload = JSON.stringify(github.context.payload, undefined, 2);
             core.debug(`The event payload: ${payload}`);
             const [base, head] = getBaseHead(context);
@@ -189,6 +192,7 @@ function run() {
                         throw Error(`One of the files has unsupported file status '${file.status}'.`);
                 }
             }
+            codeowners.dump();
         }
         catch (error) {
             core.setFailed(error.message);

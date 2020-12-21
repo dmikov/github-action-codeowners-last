@@ -1,10 +1,13 @@
 import * as fs from 'fs'
 
 export class Codeowners {
-  entries: Map<string, string[]> = new Map()
+  private entries: Map<string, string[]> = new Map()
+  private readonly filePath: string
+  private isDirty = false
 
-  constructor(private filePath: string, private numberOfAuthors: number) {
-    this.load(filePath)
+  constructor(private monitorDirectory: string, private numberOfAuthors: number) {
+    this.filePath = `.${monitorDirectory}CODEOWNERS`
+    this.load(this.filePath)
   }
 
   private load(filePath: string): void {
@@ -16,13 +19,14 @@ export class Codeowners {
     }
   }
 
-  private *lines(): Generator<string, void, unknown> {
+  private *lines(): Generator<string, void> {
     for (const entry of this.entries.entries()) {
       yield [entry[0], ...entry[1]].join(' ')
     }
   }
 
   dump(): void {
+    if (!this.isDirty) return
     const writeStream = fs.createWriteStream(this.filePath, {encoding: 'utf8', flags: 'w'})
     for (const line of this.lines()) {
       writeStream.write(`${line}\n`)
@@ -31,6 +35,8 @@ export class Codeowners {
   }
 
   add(file: string, user: string): void {
+    if (!file.startsWith(this.monitorDirectory) || file.includes('CODEOWNERS')) return
+    this.isDirty = true
     const userText = `@${user}`
     if (!this.entries.has(file)) {
       this.entries.set(file, [userText])
