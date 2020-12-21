@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import path from 'path'
 
 export class Codeowners {
   private entries: Map<string, string[]> = new Map()
@@ -6,7 +7,7 @@ export class Codeowners {
   private isDirty = false
 
   constructor(private monitorDirectory: string, private numberOfAuthors: number) {
-    this.filePath = `.${monitorDirectory}CODEOWNERS`
+    this.filePath = path.join(monitorDirectory, 'CODEOWNERS')
     this.load(this.filePath)
   }
 
@@ -14,8 +15,8 @@ export class Codeowners {
     const content: string = fs.readFileSync(filePath, {encoding: 'utf8', flag: 'as+'})
     for (const line of content.split(/\r?\n/)) {
       if (!line || line.startsWith('#')) continue
-      const [path, ...owners] = line.split(' ')
-      this.entries.set(path, owners)
+      const [commitFilePath, ...owners] = line.split(' ')
+      this.entries.set(commitFilePath, owners)
     }
   }
 
@@ -37,7 +38,7 @@ export class Codeowners {
   }
 
   add(file: string, user: string): void {
-    if (!file.startsWith(this.monitorDirectory) || file.includes('CODEOWNERS')) return
+    if (this.skip(file)) return
     this.isDirty = true
     const userText = `@${user}`
     if (!this.entries.has(file)) {
@@ -49,6 +50,11 @@ export class Codeowners {
       if (sameAuthor >= 0) existingCodeowners.splice(sameAuthor, 1)
       existingCodeowners.push(userText)
     }
+  }
+
+  private skip(file: string): boolean {
+    if (file.includes('CODEOWNERS')) return true
+    return !!this.monitorDirectory && !file.startsWith(this.monitorDirectory)
   }
 
   remove(file: string): void {

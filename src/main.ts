@@ -38,7 +38,7 @@ async function run(): Promise<void> {
   try {
     const client = github.getOctokit(core.getInput('token', req))
     const context = github.context
-    const monitorDirectory: string = core.getInput('directory_to_track', req)
+    const monitorDirectory: string = core.getInput('directory_to_track')
     const numberOfAuthors: number = Number.parseInt(core.getInput('number_of_code_owners', req))
     const codeowners = new Codeowners(monitorDirectory, numberOfAuthors)
 

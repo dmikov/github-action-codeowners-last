@@ -26,16 +26,20 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Codeowners = void 0;
 const fs = __importStar(__webpack_require__(747));
+const path_1 = __importDefault(__webpack_require__(622));
 class Codeowners {
     constructor(monitorDirectory, numberOfAuthors) {
         this.monitorDirectory = monitorDirectory;
         this.numberOfAuthors = numberOfAuthors;
         this.entries = new Map();
         this.isDirty = false;
-        this.filePath = `.${monitorDirectory}CODEOWNERS`;
+        this.filePath = path_1.default.join(monitorDirectory, 'CODEOWNERS');
         this.load(this.filePath);
     }
     load(filePath) {
@@ -43,8 +47,8 @@ class Codeowners {
         for (const line of content.split(/\r?\n/)) {
             if (!line || line.startsWith('#'))
                 continue;
-            const [path, ...owners] = line.split(' ');
-            this.entries.set(path, owners);
+            const [commitFilePath, ...owners] = line.split(' ');
+            this.entries.set(commitFilePath, owners);
         }
     }
     *lines() {
@@ -64,7 +68,7 @@ class Codeowners {
     }
     add(file, user) {
         var _a;
-        if (!file.startsWith(this.monitorDirectory) || file.includes('CODEOWNERS'))
+        if (this.skip(file))
             return;
         this.isDirty = true;
         const userText = `@${user}`;
@@ -80,6 +84,11 @@ class Codeowners {
                 existingCodeowners.splice(sameAuthor, 1);
             existingCodeowners.push(userText);
         }
+    }
+    skip(file) {
+        if (file.includes('CODEOWNERS'))
+            return true;
+        return !!this.monitorDirectory && !file.startsWith(this.monitorDirectory);
     }
     remove(file) {
         this.entries.delete(file);
@@ -161,7 +170,7 @@ function run() {
         try {
             const client = github.getOctokit(core.getInput('token', req));
             const context = github.context;
-            const monitorDirectory = core.getInput('directory_to_track', req);
+            const monitorDirectory = core.getInput('directory_to_track');
             const numberOfAuthors = Number.parseInt(core.getInput('number_of_code_owners', req));
             const codeowners = new codeowners_1.Codeowners(monitorDirectory, numberOfAuthors);
             const payload = JSON.stringify(github.context.payload, undefined, 2);

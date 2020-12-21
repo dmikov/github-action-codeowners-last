@@ -11,7 +11,6 @@ inputs:
     default: ${{ github.token }}
   directory_to_track:
     description: 'The directory to monitor'
-    required: true
   number_of_code_owners:
     description: 'The number of historical codeowners to keep per source file'
     required: false

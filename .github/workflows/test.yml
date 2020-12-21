@@ -15,7 +15,6 @@ jobs:
         id: codeowners
         uses: dmikov/github-action-codeowners-last@main
         with:
-          directory_to_track: /
           number_of_code_owners: 2
       - name: commit CODEOWNERS
         id: committed
