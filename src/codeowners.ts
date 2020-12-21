@@ -7,54 +7,43 @@ export class Codeowners {
     this.load(filePath)
   }
 
-  private load(filePath: string) {
-    const content: string = fs.readFileSync(filePath, {encoding:'utf8', flag: 'as+'} )
+  private load(filePath: string): void {
+    const content: string = fs.readFileSync(filePath, {encoding: 'utf8', flag: 'as+'})
     for (const line of content.split(/\r?\n/)) {
-      if(!line || line.startsWith('#')) continue
+      if (!line || line.startsWith('#')) continue
       const [path, ...owners] = line.split(' ')
       this.entries.set(path, owners)
     }
   }
 
-  private *lines() {
+  private *lines(): Generator<string, void, unknown> {
     for (const entry of this.entries.entries()) {
-      yield [entry[0], ...entry[1]].join(' ');
+      yield [entry[0], ...entry[1]].join(' ')
     }
   }
 
-  dump() {
-    let writeStream = fs.createWriteStream(this.filePath, {encoding:'utf8', flags: 'w'});
-    for(const line of this.lines()) {
-      writeStream.write(line + '\n');
+  dump(): void {
+    const writeStream = fs.createWriteStream(this.filePath, {encoding: 'utf8', flags: 'w'})
+    for (const line of this.lines()) {
+      writeStream.write(`${line}\n`)
     }
-    writeStream.end();
+    writeStream.end()
   }
 
-  add(file: string, user: string) {
+  add(file: string, user: string): void {
     const userText = `@${user}`
-    if(!this.entries.has(file)) {
+    if (!this.entries.has(file)) {
       this.entries.set(file, [userText])
-    }
-    else {
-      let existingCodeowners: string[] = this.entries.get(file) ?? []
-      if(existingCodeowners.length >= this.numberOfAuthors) existingCodeowners.shift()
+    } else {
+      const existingCodeowners: string[] = this.entries.get(file) ?? []
+      if (existingCodeowners.length >= this.numberOfAuthors) existingCodeowners.shift()
       const sameAuthor = existingCodeowners.indexOf(userText)
-      if(sameAuthor >= 0) existingCodeowners.splice(sameAuthor, 1)
+      if (sameAuthor >= 0) existingCodeowners.splice(sameAuthor, 1)
       existingCodeowners.push(userText)
     }
   }
 
-  remove(file: string) {
+  remove(file: string): void {
     this.entries.delete(file)
   }
 }
-
-let codeowners = new Codeowners('c:\\temp\\CODEOWNERS', 3)
-console.log(codeowners.entries)
-
-codeowners.add('/projects/dotnet/Core/applications.json', 'dmikov')
-codeowners.add('/projects/dotnet/Core/applications.json', 'vterziski')
-codeowners.add('/projects/dotnet/Core/applications.json', 'brant')
-codeowners.add('/projects/dotnet/Core/applications.json', 'vterziski')
-console.log(codeowners.entries)
-codeowners.dump()

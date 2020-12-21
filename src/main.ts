@@ -1,8 +1,8 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {Context} from '@actions/github/lib/context'
-import {Codeowners} from './codeowners';
-import path from 'path';
+import {Codeowners} from './codeowners'
+import path from 'path'
 
 const req = {required: true}
 
@@ -29,6 +29,12 @@ function getBaseHead(context: Context): [string, string] {
   return [base, head]
 }
 
+function getUserName(context: Context): string {
+  const username = context.payload.head_commit.author.username
+  core.debug(`Author: ${username}`)
+  return username
+}
+
 async function run(): Promise<void> {
   try {
     const client = github.getOctokit(core.getInput('token', req))
@@ -36,7 +42,6 @@ async function run(): Promise<void> {
     const monitorDirectory: string = core.getInput('directory_to_track', req)
     const numberOfAuthors: number = Number.parseInt(core.getInput('number_of_code_owners', req))
     const codeowners = new Codeowners(path.join(monitorDirectory, 'CODEOWNERS'), numberOfAuthors)
-
 
     const payload = JSON.stringify(github.context.payload, undefined, 2)
     core.debug(`The event payload: ${payload}`)
@@ -61,7 +66,7 @@ async function run(): Promise<void> {
         case 'added':
         case 'modified':
         case 'renamed':
-          codeowners.add(filename, author)
+          codeowners.add(filename, getUserName(context))
           break
         case 'removed':
           codeowners.remove(filename)
