@@ -2,6 +2,86 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 585:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Codeowners = void 0;
+const fs = __importStar(__webpack_require__(747));
+class Codeowners {
+    constructor(filePath, numberOfAuthors) {
+        this.filePath = filePath;
+        this.numberOfAuthors = numberOfAuthors;
+        this.entries = new Map();
+        this.load(filePath);
+    }
+    load(filePath) {
+        const content = fs.readFileSync(filePath, { encoding: 'utf8', flag: 'as+' });
+        for (const line of content.split(/\r?\n/)) {
+            if (!line || line.startsWith('#'))
+                continue;
+            const [path, ...owners] = line.split(' ');
+            this.entries.set(path, owners);
+        }
+    }
+    *lines() {
+        for (const entry of this.entries.entries()) {
+            yield [entry[0], ...entry[1]].join(' ');
+        }
+    }
+    dump() {
+        const writeStream = fs.createWriteStream(this.filePath, { encoding: 'utf8', flags: 'w' });
+        for (const line of this.lines()) {
+            writeStream.write(`${line}\n`);
+        }
+        writeStream.end();
+    }
+    add(file, user) {
+        var _a;
+        const userText = `@${user}`;
+        if (!this.entries.has(file)) {
+            this.entries.set(file, [userText]);
+        }
+        else {
+            const existingCodeowners = (_a = this.entries.get(file)) !== null && _a !== void 0 ? _a : [];
+            if (existingCodeowners.length >= this.numberOfAuthors)
+                existingCodeowners.shift();
+            const sameAuthor = existingCodeowners.indexOf(userText);
+            if (sameAuthor >= 0)
+                existingCodeowners.splice(sameAuthor, 1);
+            existingCodeowners.push(userText);
+        }
+    }
+    remove(file) {
+        this.entries.delete(file);
+    }
+}
+exports.Codeowners = Codeowners;
+
+
+/***/ }),
+
 /***/ 109:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
@@ -35,16 +115,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(186));
 const github = __importStar(__webpack_require__(438));
+const codeowners_1 = __webpack_require__(585);
+const path_1 = __importDefault(__webpack_require__(622));
 const req = { required: true };
-function change(value) {
-    core.debug(value);
-}
-function remove(value) {
-    core.debug(value);
-}
 function getBaseHead(context) {
     var _a, _b;
     let base;
@@ -68,11 +147,19 @@ function getBaseHead(context) {
     core.debug(`Head: ${head}`);
     return [base, head];
 }
+function getUserName(context) {
+    const username = context.payload.head_commit.author.username;
+    core.debug(`Author: ${username}`);
+    return username;
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const client = github.getOctokit(core.getInput('token', req));
             const context = github.context;
+            const monitorDirectory = core.getInput('directory_to_track', req);
+            const numberOfAuthors = Number.parseInt(core.getInput('number_of_code_owners', req));
+            const codeowners = new codeowners_1.Codeowners(path_1.default.join(monitorDirectory, 'CODEOWNERS'), numberOfAuthors);
             const payload = JSON.stringify(github.context.payload, undefined, 2);
             core.debug(`The event payload: ${payload}`);
             const [base, head] = getBaseHead(context);
@@ -93,10 +180,10 @@ function run() {
                     case 'added':
                     case 'modified':
                     case 'renamed':
-                        change(filename);
+                        codeowners.add(filename, getUserName(context));
                         break;
                     case 'removed':
-                        remove(filename);
+                        codeowners.remove(filename);
                         break;
                     default:
                         throw Error(`One of the files has unsupported file status '${file.status}'.`);

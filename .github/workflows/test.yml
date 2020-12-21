@@ -13,5 +13,5 @@ jobs:
       - uses: actions/checkout@master
       - uses: dmikov/github-action-last-to-codeowners@main
         with:
-          directory_to_track: /test
+          directory_to_track: /
           number_of_code_owners: 2
