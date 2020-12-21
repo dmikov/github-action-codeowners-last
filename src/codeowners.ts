@@ -25,13 +25,15 @@ export class Codeowners {
     }
   }
 
-  dump(): void {
-    if (!this.isDirty) return
-    const writeStream = fs.createWriteStream(this.filePath, {encoding: 'utf8', flags: 'w'})
-    for (const line of this.lines()) {
-      writeStream.write(`${line}\n`)
+  dump(): string | undefined {
+    if (this.isDirty) {
+      const writeStream = fs.createWriteStream(this.filePath, {encoding: 'utf8', flags: 'w'})
+      for (const line of this.lines()) {
+        writeStream.write(`${line}\n`)
+      }
+      writeStream.end()
+      return this.filePath
     }
-    writeStream.end()
   }
 
   add(file: string, user: string): void {

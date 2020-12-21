@@ -53,13 +53,14 @@ class Codeowners {
         }
     }
     dump() {
-        if (!this.isDirty)
-            return;
-        const writeStream = fs.createWriteStream(this.filePath, { encoding: 'utf8', flags: 'w' });
-        for (const line of this.lines()) {
-            writeStream.write(`${line}\n`);
+        if (this.isDirty) {
+            const writeStream = fs.createWriteStream(this.filePath, { encoding: 'utf8', flags: 'w' });
+            for (const line of this.lines()) {
+                writeStream.write(`${line}\n`);
+            }
+            writeStream.end();
+            return this.filePath;
         }
-        writeStream.end();
     }
     add(file, user) {
         var _a;
@@ -176,6 +177,7 @@ function run() {
             if (response.status !== 200) {
                 throw Error(`The Octokit client returned ${response.status}.`);
             }
+            const author = getUserName(context);
             for (const file of response.data.files) {
                 core.debug(`File: ${JSON.stringify(file, undefined, 2)}`);
                 const filename = file.filename;
@@ -183,7 +185,7 @@ function run() {
                     case 'added':
                     case 'modified':
                     case 'renamed':
-                        codeowners.add(filename, getUserName(context));
+                        codeowners.add(filename, author);
                         break;
                     case 'removed':
                         codeowners.remove(filename);
@@ -192,7 +194,7 @@ function run() {
                         throw Error(`One of the files has unsupported file status '${file.status}'.`);
                 }
             }
-            codeowners.dump();
+            core.setOutput('file', codeowners.dump());
         }
         catch (error) {
             core.setFailed(error.message);

@@ -57,6 +57,8 @@ async function run(): Promise<void> {
       throw Error(`The Octokit client returned ${response.status}.`)
     }
 
+    const author = getUserName(context)
+
     for (const file of response.data.files) {
       core.debug(`File: ${JSON.stringify(file, undefined, 2)}`)
 
@@ -65,7 +67,7 @@ async function run(): Promise<void> {
         case 'added':
         case 'modified':
         case 'renamed':
-          codeowners.add(filename, getUserName(context))
+          codeowners.add(filename, author)
           break
         case 'removed':
           codeowners.remove(filename)
@@ -74,7 +76,7 @@ async function run(): Promise<void> {
           throw Error(`One of the files has unsupported file status '${file.status}'.`)
       }
     }
-    codeowners.dump()
+    core.setOutput('file', codeowners.dump())
   } catch (error) {
     core.setFailed(error.message)
   }
