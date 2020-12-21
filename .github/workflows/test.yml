@@ -10,7 +10,17 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     steps:
-      - uses: dmikov/github-action-codeowners-last@main
+      - uses: actions/checkout@master
+      - name: create CODEOWNERS
+        id: codeowners
+        uses: dmikov/github-action-codeowners-last@main
         with:
           directory_to_track: /
           number_of_code_owners: 2
+      - name: commit CODEOWNERS
+        id: committed
+        if: ${{ steps.committed.outputs.changes_detected == 'true' }}
+        uses: stefanzweifel/git-auto-commit-action@v4.7.2
+        with:
+          commit_message: 'chore(meta): update code owners'
+          file_pattern: ${{ steps.codeowners.file }}
