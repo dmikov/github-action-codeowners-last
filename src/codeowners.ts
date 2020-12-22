@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import * as core from '@actions/core'
 
 export class Codeowners {
   private entries: Map<string, string[]> = new Map()
@@ -38,6 +39,7 @@ export class Codeowners {
     if (this.skip(file)) return
     this.isDirty = true
     const userText = `@${user}`
+    core.debug(`CODEOWNERS written: ${file} ${userText}`)
     if (!this.entries.has(file)) {
       this.entries.set(file, [userText])
     } else {

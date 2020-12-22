@@ -1,7 +1,7 @@
 # Assign last committers to be files Codeowners
 
-This action reads commit list and parses existing or create new CODEOWNERS file with files assigned committers as 
-codeowners. Will keep the last *n of committers on the list.
+Takes authors of last commit (push or pull request) and adds them to CODEOWNERS file per each file.
+Will keep the last *n of committers on the list per file.
 
 ## Usage
 
@@ -52,6 +52,6 @@ jobs:
 
 | name               | description          |
 | ------------------ | ---------------------|
-| `file`       | The codeowners file it was written to. Same as input. Done to avoid double typing in workflow.|
+| `file`       | The codeowners file it was written to. Same as input or null if nothing is written.|
 
 The file has to be committed back, so for the next step its location is helpful.

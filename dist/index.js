@@ -29,6 +29,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Codeowners = void 0;
 const fs = __importStar(__webpack_require__(747));
+const core = __importStar(__webpack_require__(186));
 class Codeowners {
     constructor(filePath, monitorDirectory, numberOfAuthors) {
         this.filePath = filePath;
@@ -68,6 +69,7 @@ class Codeowners {
             return;
         this.isDirty = true;
         const userText = `@${user}`;
+        core.debug(`CODEOWNERS written: ${file} ${userText}`);
         if (!this.entries.has(file)) {
             this.entries.set(file, [userText]);
         }

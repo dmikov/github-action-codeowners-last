@@ -23,6 +23,6 @@ jobs:
         uses: EndBug/add-and-commit@v5
         with:
           message: 'commit CODEOWNERS'
-          add: ${{ steps.codeowners.file }}
+          add: ${{ steps.codeowners.outputs.file }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
