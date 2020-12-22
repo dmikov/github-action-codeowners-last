@@ -1,12 +1,11 @@
 import * as fs from 'fs'
+import * as core from '@actions/core'
 
 export class Codeowners {
   private entries: Map<string, string[]> = new Map()
-  private readonly filePath: string
   private isDirty = false
 
-  constructor(private monitorDirectory: string, private numberOfAuthors: number) {
-    this.filePath = `.${monitorDirectory}CODEOWNERS`
+  constructor(private filePath: string, private monitorDirectory: string, private numberOfAuthors: number) {
     this.load(this.filePath)
   }
 
@@ -14,8 +13,8 @@ export class Codeowners {
     const content: string = fs.readFileSync(filePath, {encoding: 'utf8', flag: 'as+'})
     for (const line of content.split(/\r?\n/)) {
       if (!line || line.startsWith('#')) continue
-      const [path, ...owners] = line.split(' ')
-      this.entries.set(path, owners)
+      const [commitFilePath, ...owners] = line.split(' ')
+      this.entries.set(commitFilePath, owners)
     }
   }
 
@@ -37,9 +36,10 @@ export class Codeowners {
   }
 
   add(file: string, user: string): void {
-    if (!file.startsWith(this.monitorDirectory) || file.includes('CODEOWNERS')) return
+    if (this.skip(file)) return
     this.isDirty = true
     const userText = `@${user}`
+    core.debug(`CODEOWNERS written: ${file} ${userText}`)
     if (!this.entries.has(file)) {
       this.entries.set(file, [userText])
     } else {
@@ -49,6 +49,11 @@ export class Codeowners {
       if (sameAuthor >= 0) existingCodeowners.splice(sameAuthor, 1)
       existingCodeowners.push(userText)
     }
+  }
+
+  private skip(file: string): boolean {
+    if (file.includes('CODEOWNERS')) return true
+    return !!this.monitorDirectory && !file.startsWith(this.monitorDirectory)
   }
 
   remove(file: string): void {

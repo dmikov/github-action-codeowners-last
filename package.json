@@ -1,8 +1,10 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
-  "private": true,
-  "description": "TypeScript template action",
+  "name": "codewners-last-authors",
+  "description": "Put last authors to CODEOWNERS github action",
+  "version": "1.0.0",
+  "license": "MIT",
+  "repository": "https://github.com/swimlane/github-action-codeowners-last",
+  "author": "Dmitriy Krasnikov <dmikov@gmail.com>",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
@@ -13,24 +15,18 @@
     "test": "jest",
     "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
-  },
   "keywords": [
     "actions",
-    "node",
-    "setup"
+    "github",
+    "codeownners"
   ],
-  "author": "",
-  "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.2.6",
     "@actions/github": "^4.0.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.19",
-    "@typescript-eslint/parser": "^4.10.0",
+    "@typescript-eslint/parser": "^4.11.0",
     "@types/node": "^14.14.14",
     "@vercel/ncc": "^0.25.1",
     "eslint": "^7.13.0",

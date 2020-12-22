@@ -1,0 +1,5 @@
+.github/workflows/test.yml @dmikov
+README.md @dmikov
+dist/index.js @dmikov
+dist/index.js.map @dmikov
+src/codeowners.ts @dmikov
