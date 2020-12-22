@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
       - name: create CODEOWNERS
         id: codeowners
         uses: dmikov/github-action-codeowners-last@main
