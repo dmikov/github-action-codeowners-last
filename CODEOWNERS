@@ -5,3 +5,4 @@ dist/index.js.map @dmikov
 src/codeowners.ts @dmikov
 package-lock.json @dmikov
 package.json @dmikov
+action.yml @dmikov
