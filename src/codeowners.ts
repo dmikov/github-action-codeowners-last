@@ -1,13 +1,10 @@
 import * as fs from 'fs'
-import path from 'path'
 
 export class Codeowners {
   private entries: Map<string, string[]> = new Map()
-  private readonly filePath: string
   private isDirty = false
 
-  constructor(private monitorDirectory: string, private numberOfAuthors: number) {
-    this.filePath = path.join(monitorDirectory, 'CODEOWNERS')
+  constructor(private filePath: string, private monitorDirectory: string, private numberOfAuthors: number) {
     this.load(this.filePath)
   }
 

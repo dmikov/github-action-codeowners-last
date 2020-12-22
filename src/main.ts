@@ -38,9 +38,10 @@ async function run(): Promise<void> {
   try {
     const client = github.getOctokit(core.getInput('token', req))
     const context = github.context
+    const filePath: string = core.getInput('file', req)
     const monitorDirectory: string = core.getInput('directory_to_track')
     const numberOfAuthors: number = Number.parseInt(core.getInput('number_of_code_owners', req))
-    const codeowners = new Codeowners(monitorDirectory, numberOfAuthors)
+    const codeowners = new Codeowners(filePath, monitorDirectory, numberOfAuthors)
 
     const payload = JSON.stringify(github.context.payload, undefined, 2)
     core.debug(`The event payload: ${payload}`)

@@ -26,20 +26,16 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Codeowners = void 0;
 const fs = __importStar(__webpack_require__(747));
-const path_1 = __importDefault(__webpack_require__(622));
 class Codeowners {
-    constructor(monitorDirectory, numberOfAuthors) {
+    constructor(filePath, monitorDirectory, numberOfAuthors) {
+        this.filePath = filePath;
         this.monitorDirectory = monitorDirectory;
         this.numberOfAuthors = numberOfAuthors;
         this.entries = new Map();
         this.isDirty = false;
-        this.filePath = path_1.default.join(monitorDirectory, 'CODEOWNERS');
         this.load(this.filePath);
     }
     load(filePath) {
@@ -170,9 +166,10 @@ function run() {
         try {
             const client = github.getOctokit(core.getInput('token', req));
             const context = github.context;
+            const filePath = core.getInput('file', req);
             const monitorDirectory = core.getInput('directory_to_track');
             const numberOfAuthors = Number.parseInt(core.getInput('number_of_code_owners', req));
-            const codeowners = new codeowners_1.Codeowners(monitorDirectory, numberOfAuthors);
+            const codeowners = new codeowners_1.Codeowners(filePath, monitorDirectory, numberOfAuthors);
             const payload = JSON.stringify(github.context.payload, undefined, 2);
             core.debug(`The event payload: ${payload}`);
             const [base, head] = getBaseHead(context);
