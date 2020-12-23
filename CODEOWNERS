@@ -6,3 +6,4 @@ src/codeowners.ts @dmikov
 package-lock.json @dmikov
 package.json @dmikov
 action.yml @dmikov
+src/main.ts @dmikov
