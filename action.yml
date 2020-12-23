@@ -2,8 +2,8 @@ name: Author to CODEOWNERS
 description: 'Last authors written to CODEOWNERS'
 author: 'Dmitriy Krasnikov'
 branding:
-  icon: '??'
-  color: 'red'
+  icon: 'award'
+  color: 'blue'
 inputs:
   token:
     description: 'GitHub token for GitHub API requests.'

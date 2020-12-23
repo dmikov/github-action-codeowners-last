@@ -11,32 +11,46 @@ Write a `.yml` file such as this one in your `.github/workflows` folder. [Refer 
 syntax here.](https://help.github.com/en/articles/workflow-syntax-for-github-actions)
 
 ```yaml
-name: 'build-codeowners'
-on: # rebuild any PRs and main branch changes
+name: 'update-codeowners'
+on:
   pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
       - 'releases/*'
 
 jobs:
-  upload:
+  update:
     runs-on: ubuntu-latest
+    # Read the notes about preventing merges overwriting owners created by PR
+    if: github.event.pull_request.merged != true
     steps:
       - uses: actions/checkout@master
+        with:
+          fetch-depth: 0
       - name: create CODEOWNERS
         id: codeowners
         uses: dmikov/github-action-codeowners-last@main
         with:
           number_of_code_owners: 2
       - name: commit CODEOWNERS
-        id: committed
         if: ${{ steps.codeowners.outputs.file }}
-        uses: stefanzweifel/git-auto-commit-action@v4.7.2
+        uses: EndBug/add-and-commit@v5
         with:
-          commit_message: 'chore(meta): update code owners'
-          file_pattern: ${{ steps.codeowners.file }}
+          message: 'commit CODEOWNERS'
+          add: ${{ steps.codeowners.outputs.file }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+Action was made intentionally to have a single responsibility, it will add authors when you tell it to. So prevention
+of double run on PR and merge to main branch is your responsibility. You can of course disallow pushes to
+main branch without PR (as you should), then you can exclude the main branch from push trigger. As an opposite
+you can only update codeowners on push to main, less observable, but less of a chance for conflicts between
+multiple branches. If you need both however, the condition on the job `if: github.event.pull_request.merged != true`
+should prevent double runs.
 
 ## Action inputs
 
