@@ -28,16 +28,20 @@ function getBaseHead(context: Context): [string, string] {
   return [base, head]
 }
 
-function getUserName(context: Context): string {
-  const username = context.payload.head_commit.author.username
-  core.debug(`Author: ${username}`)
-  return username
+function getUserName(context: Context): [string, string] {
+  const username = context.payload.sender?.login
+  const type = context.payload.sender?.type ?? 'Bot'
+  core.debug(`Login: ${username}`)
+  core.debug(`Type: ${type}`)
+  return [type, username]
 }
 
 async function run(): Promise<void> {
   try {
     const client = github.getOctokit(core.getInput('token', req))
     const context = github.context
+    const [type, author] = getUserName(context)
+    if (type === 'Bot') return
     const filePath: string = core.getInput('file', req)
     const monitorDirectory: string = core.getInput('directory_to_track')
     const numberOfAuthors: number = Number.parseInt(core.getInput('number_of_code_owners', req))
@@ -46,19 +50,12 @@ async function run(): Promise<void> {
     const payload = JSON.stringify(github.context.payload, undefined, 2)
     core.debug(`The event payload: ${payload}`)
     const [base, head] = getBaseHead(context)
-    const response = await client.repos.compareCommits({
-      base,
-      head,
-      owner: context.repo.owner,
-      repo: context.repo.repo
-    })
+    const response = await client.repos.compareCommits({base, head, owner: context.repo.owner, repo: context.repo.repo})
     core.debug(`Response: ${JSON.stringify(response, undefined, 2)}`)
 
     if (response.status !== 200) {
       throw Error(`The Octokit client returned ${response.status}.`)
     }
-
-    const author = getUserName(context)
 
     for (const file of response.data.files) {
       core.debug(`File: ${JSON.stringify(file, undefined, 2)}`)

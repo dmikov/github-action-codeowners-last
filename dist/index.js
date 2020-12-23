@@ -159,15 +159,21 @@ function getBaseHead(context) {
     return [base, head];
 }
 function getUserName(context) {
-    const username = context.payload.head_commit.author.username;
-    core.debug(`Author: ${username}`);
-    return username;
+    var _a, _b, _c;
+    const username = (_a = context.payload.sender) === null || _a === void 0 ? void 0 : _a.login;
+    const type = (_c = (_b = context.payload.sender) === null || _b === void 0 ? void 0 : _b.type) !== null && _c !== void 0 ? _c : 'Bot';
+    core.debug(`Login: ${username}`);
+    core.debug(`Type: ${type}`);
+    return [type, username];
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const client = github.getOctokit(core.getInput('token', req));
             const context = github.context;
+            const [type, author] = getUserName(context);
+            if (type === 'Bot')
+                return;
             const filePath = core.getInput('file', req);
             const monitorDirectory = core.getInput('directory_to_track');
             const numberOfAuthors = Number.parseInt(core.getInput('number_of_code_owners', req));
@@ -175,17 +181,11 @@ function run() {
             const payload = JSON.stringify(github.context.payload, undefined, 2);
             core.debug(`The event payload: ${payload}`);
             const [base, head] = getBaseHead(context);
-            const response = yield client.repos.compareCommits({
-                base,
-                head,
-                owner: context.repo.owner,
-                repo: context.repo.repo
-            });
+            const response = yield client.repos.compareCommits({ base, head, owner: context.repo.owner, repo: context.repo.repo });
             core.debug(`Response: ${JSON.stringify(response, undefined, 2)}`);
             if (response.status !== 200) {
                 throw Error(`The Octokit client returned ${response.status}.`);
             }
-            const author = getUserName(context);
             for (const file of response.data.files) {
                 core.debug(`File: ${JSON.stringify(file, undefined, 2)}`);
                 const filename = file.filename;
