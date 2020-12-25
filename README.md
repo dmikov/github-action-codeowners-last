@@ -50,7 +50,7 @@ of double run on PR and merge to main branch is your responsibility. You can of 
 main branch without PR (as you should), then you can exclude the main branch from push trigger. As an opposite
 you can only update codeowners on push to main, less observable, but less of a chance for conflicts between
 multiple branches. If you need both however, the condition on the job `if: github.event.pull_request.merged != true`
-should prevent double runs.
+should prevent double runs. Might not be so.
 
 ## Action inputs
 
