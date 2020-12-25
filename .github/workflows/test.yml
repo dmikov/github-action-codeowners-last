@@ -15,9 +15,9 @@ jobs:
     if: github.event.pull_request.merged != true
     steps:
       - name: Dump GitHub context
-          env:
-            GITHUB_CONTEXT: ${{ toJson(github.event) }}
-          run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github.event) }}
+        run: echo "$GITHUB_CONTEXT"
       - uses: actions/checkout@master
         with:
           fetch-depth: 0
