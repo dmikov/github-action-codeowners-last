@@ -12,7 +12,7 @@ jobs:
   update:
     runs-on: ubuntu-latest
     # Read the notes about preventing merges overwriting owners created by PR
-    if: startsWith( github.event.head_commit.message, "Merge pull request" )
+    if: startsWith( github.event.head_commit.message, 'Merge pull request' )
     steps:
       - uses: actions/checkout@master
         with:
