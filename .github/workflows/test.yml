@@ -12,12 +12,8 @@ jobs:
   update:
     runs-on: ubuntu-latest
     # Read the notes about preventing merges overwriting owners created by PR
-    if: github.event.pull_request.merged != true
+    if: startsWith( github.event.head_commit?.message, "Merge pull request" )
     steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github.event) }}
-        run: echo "$GITHUB_CONTEXT"
       - uses: actions/checkout@master
         with:
           fetch-depth: 0
